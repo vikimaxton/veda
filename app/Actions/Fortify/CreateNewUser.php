@@ -30,10 +30,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        // Automatically assign Student role to new users
+        $studentRole = \App\Models\Role::where('slug', 'student')->first();
+        if ($studentRole) {
+            $user->syncRoles([$studentRole->id]);
+        }
+
+        return $user;
     }
 }

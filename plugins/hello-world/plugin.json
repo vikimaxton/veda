@@ -1,0 +1,38 @@
+{
+    "name": "Hello World Plugin",
+    "slug": "hello-world",
+    "version": "1.0.0",
+    "author": "CMS Team",
+    "description": "A simple example plugin that demonstrates the plugin system capabilities",
+    "permissions": [
+        "view_hello"
+    ],
+    "hooks": {
+        "cms.booted": "hooks/onCmsBooted.php",
+        "page.created": "hooks/onPageCreated.php"
+    },
+    "blocks": [
+        {
+            "type": "hello-block",
+            "name": "Hello Block",
+            "category": "custom",
+            "icon": "wave",
+            "attributes": {
+                "message": {
+                    "type": "string",
+                    "default": "Hello from plugin!"
+                }
+            }
+        }
+    ],
+    "routes": {
+        "web": "routes/web.php",
+        "api": "routes/api.php"
+    },
+    "admin_menu": {
+        "title": "Hello World",
+        "icon": "wave",
+        "route": "/admin/hello-world",
+        "permission": "view_hello"
+    }
+}

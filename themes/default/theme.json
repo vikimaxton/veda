@@ -1,0 +1,54 @@
+{
+    "name": "Default Theme",
+    "slug": "default",
+    "version": "1.0.0",
+    "author": "CMS Team",
+    "description": "A clean, modern default theme for the CMS",
+    "templates": {
+        "home": {
+            "name": "Home Page",
+            "component": "templates/home.tsx",
+            "supports": [
+                "blocks",
+                "seo"
+            ]
+        },
+        "landing": {
+            "name": "Landing Page",
+            "component": "templates/landing.tsx",
+            "supports": [
+                "blocks",
+                "seo"
+            ]
+        },
+        "full-width": {
+            "name": "Full Width",
+            "component": "templates/full-width.tsx",
+            "supports": [
+                "blocks"
+            ]
+        },
+        "blank": {
+            "name": "Blank",
+            "component": "templates/blank.tsx",
+            "supports": [
+                "blocks"
+            ]
+        }
+    },
+    "hooks": {
+        "beforeRender": "hooks/beforeRender.ts",
+        "afterRender": "hooks/afterRender.ts"
+    },
+    "settings": {
+        "colors": {
+            "primary": "#3b82f6",
+            "secondary": "#8b5cf6",
+            "accent": "#f59e0b"
+        },
+        "typography": {
+            "fontFamily": "Inter, system-ui, sans-serif",
+            "headingFont": "Inter, system-ui, sans-serif"
+        }
+    }
+}
