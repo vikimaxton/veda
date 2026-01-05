@@ -22,7 +22,7 @@ interface SettingsProps {
 }
 
 export default function Settings({ auth, settings }: SettingsProps) {
-    const [activeTab, setActiveTab] = useState<'general' | 'seo' | 'advanced'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'seo' | 'advanced' | 'updates'>('general');
 
     const { data, setData, processing, errors } = useForm({
         site_title: settings.site_title || '',
@@ -53,6 +53,7 @@ export default function Settings({ auth, settings }: SettingsProps) {
         { id: 'general', name: 'General', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         { id: 'seo', name: 'SEO', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
         { id: 'advanced', name: 'Advanced', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4' },
+        { id: 'updates', name: 'Updates', icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' },
     ];
 
     return (
@@ -125,10 +126,10 @@ export default function Settings({ auth, settings }: SettingsProps) {
                                         <button
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id as any)}
-                                            className={`flex items - center py - 4 px - 1 border - b - 2 font - medium text - sm transition - colors ${activeTab === tab.id
+                                            className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
                                                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                                                } `}
+                                                }`}
                                         >
                                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
@@ -354,6 +355,126 @@ export default function Settings({ auth, settings }: SettingsProps) {
                                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                                     Enable debug mode to see detailed error messages (not recommended for production)
                                                 </p>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Updates Tab */}
+                                    {activeTab === 'updates' && (
+                                        <>
+                                            <div className="space-y-6">
+                                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                                    <div className="flex items-center">
+                                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                                            Current Version: <strong>1.0.0</strong>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload CMS Update</h3>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                                        Upload a ZIP file containing the CMS update. A backup will be created automatically before applying the update.
+                                                    </p>
+
+                                                    <label className="block">
+                                                        <span className="sr-only">Choose CMS update ZIP file</span>
+                                                        <input
+                                                            type="file"
+                                                            accept=".zip"
+                                                            className="block w-full text-sm text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 focus:outline-none"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+
+                                                                const version = prompt('Enter the version number for this update (e.g., 1.1.0):');
+                                                                if (!version) return;
+
+                                                                const changelog = prompt('Enter changelog (optional):');
+
+                                                                if (!confirm(`Are you sure you want to update to version ${version}? A backup will be created first.`)) {
+                                                                    e.target.value = '';
+                                                                    return;
+                                                                }
+
+                                                                const formData = new FormData();
+                                                                formData.append('update_zip', file);
+                                                                formData.append('version', version);
+                                                                if (changelog) formData.append('changelog', changelog);
+
+                                                                try {
+                                                                    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                                                                    const response = await fetch('/api/cms/system/updates/upload', {
+                                                                        method: 'POST',
+                                                                        headers: {
+                                                                            'X-CSRF-TOKEN': csrfToken || '',
+                                                                            'X-Requested-With': 'XMLHttpRequest',
+                                                                            'Accept': 'application/json',
+                                                                        },
+                                                                        body: formData,
+                                                                        credentials: 'same-origin',
+                                                                    });
+
+                                                                    if (response.ok) {
+                                                                        alert('CMS updated successfully! Please refresh the page.');
+                                                                        window.location.reload();
+                                                                    } else {
+                                                                        const data = await response.json();
+                                                                        alert(`Update failed: ${data.message || 'Unknown error'}`);
+                                                                    }
+                                                                } catch (error) {
+                                                                    console.error('Update error:', error);
+                                                                    alert('An error occurred during update');
+                                                                }
+
+                                                                e.target.value = '';
+                                                            }}
+                                                        />
+                                                    </label>
+                                                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        Maximum file size: 100MB. Only ZIP files are allowed.
+                                                    </p>
+                                                </div>
+
+                                                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Backup Management</h3>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                                        Backups are created automatically before each update. You can rollback to a previous version using these backups.
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            try {
+                                                                const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                                                                const response = await fetch('/api/cms/system/backups', {
+                                                                    headers: {
+                                                                        'X-CSRF-TOKEN': csrfToken || '',
+                                                                        'Accept': 'application/json',
+                                                                    },
+                                                                    credentials: 'same-origin',
+                                                                });
+
+                                                                if (response.ok) {
+                                                                    const result = await response.json();
+                                                                    if (result.data.length === 0) {
+                                                                        alert('No backups available');
+                                                                    } else {
+                                                                        console.log('Available backups:', result.data);
+                                                                        alert(`Found ${result.data.length} backup(s). Check console for details.`);
+                                                                    }
+                                                                }
+                                                            } catch (error) {
+                                                                console.error('Error fetching backups:', error);
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
+                                                    >
+                                                        View Backups
+                                                    </button>
+                                                </div>
                                             </div>
                                         </>
                                     )}

@@ -121,8 +121,56 @@ export default function Plugins({ auth, plugins }: PluginsProps) {
                                         Extend your site's functionality with plugins
                                     </p>
                                 </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    {activeCount} of {plugins.length} active
+                                <div className="flex items-center gap-4">
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        {activeCount} of {plugins.length} active
+                                    </div>
+                                    <label className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors">
+                                        <input
+                                            type="file"
+                                            accept=".zip"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const formData = new FormData();
+                                                formData.append('plugin_zip', file);
+
+                                                try {
+                                                    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                                                    const response = await fetch('/api/cms/plugins/upload', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': csrfToken || '',
+                                                            'X-Requested-With': 'XMLHttpRequest',
+                                                            'Accept': 'application/json',
+                                                        },
+                                                        body: formData,
+                                                        credentials: 'same-origin',
+                                                    });
+
+                                                    if (response.ok) {
+                                                        alert('Plugin uploaded successfully!');
+                                                        router.visit(window.location.pathname, {
+                                                            preserveState: false,
+                                                            preserveScroll: true,
+                                                        });
+                                                    } else {
+                                                        const data = await response.json();
+                                                        alert(`Upload failed: ${data.message || 'Unknown error'}`);
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Upload error:', error);
+                                                    alert('An error occurred during upload');
+                                                }
+
+                                                // Reset input
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                        Upload Plugin
+                                    </label>
                                 </div>
                             </div>
 

@@ -3,6 +3,16 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | CMS Version
+    |--------------------------------------------------------------------------
+    |
+    | Current version of the CMS.
+    |
+    */
+    'version' => '1.0.0',
+
+    /*
+    |--------------------------------------------------------------------------
     | CMS Theme Path
     |--------------------------------------------------------------------------
     |
@@ -65,6 +75,34 @@ return [
         'default_status' => 'draft',
         'auto_slug' => true,
         'versioning_enabled' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for CMS updates and backups.
+    |
+    */
+    'updates' => [
+        'auto_backup' => env('CMS_AUTO_BACKUP', true),
+        'backup_retention_days' => env('CMS_BACKUP_RETENTION', 30),
+        'backup_path' => storage_path('app/backups'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Upload Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for file uploads (plugins, themes, updates).
+    |
+    */
+    'uploads' => [
+        'max_size' => env('CMS_MAX_UPLOAD_SIZE', 52428800), // 50MB
+        'allowed_types' => ['application/zip', 'application/x-zip-compressed'],
+        'temp_path' => storage_path('app/temp'),
     ],
 
     /*

@@ -113,10 +113,60 @@ export default function Themes({ auth, themes }: ThemesProps) {
                     <main className="flex-1 p-8">
                         <div className="max-w-7xl mx-auto">
                             <div className="mb-8">
-                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Themes</h2>
-                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                    Customize your site's appearance with themes
-                                </p>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Themes</h2>
+                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                            Customize your site's appearance with themes
+                                        </p>
+                                    </div>
+                                    <label className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors">
+                                        <input
+                                            type="file"
+                                            accept=".zip"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const formData = new FormData();
+                                                formData.append('theme_zip', file);
+
+                                                try {
+                                                    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                                                    const response = await fetch('/api/cms/themes/upload', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': csrfToken || '',
+                                                            'X-Requested-With': 'XMLHttpRequest',
+                                                            'Accept': 'application/json',
+                                                        },
+                                                        body: formData,
+                                                        credentials: 'same-origin',
+                                                    });
+
+                                                    if (response.ok) {
+                                                        alert('Theme uploaded successfully!');
+                                                        router.visit(window.location.pathname, {
+                                                            preserveState: false,
+                                                            preserveScroll: true,
+                                                        });
+                                                    } else {
+                                                        const data = await response.json();
+                                                        alert(`Upload failed: ${data.message || 'Unknown error'}`);
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Upload error:', error);
+                                                    alert('An error occurred during upload');
+                                                }
+
+                                                // Reset input
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                        Upload Theme
+                                    </label>
+                                </div>
                             </div>
 
                             {activeTheme && (

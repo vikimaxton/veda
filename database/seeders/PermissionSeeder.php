@@ -30,6 +30,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'Manage Plugins', 'slug' => 'manage_plugins', 'category' => 'plugins'],
             ['name' => 'Install Plugin', 'slug' => 'install_plugin', 'category' => 'plugins'],
             ['name' => 'Activate Plugin', 'slug' => 'activate_plugin', 'category' => 'plugins'],
+            ['name' => 'Upload Plugin', 'slug' => 'upload_plugin', 'category' => 'plugins'],
             
             // User & Role permissions
             ['name' => 'View Users', 'slug' => 'view_users', 'category' => 'users'],
@@ -39,6 +40,11 @@ class PermissionSeeder extends Seeder
             // Settings permissions
             ['name' => 'View Settings', 'slug' => 'view_settings', 'category' => 'settings'],
             ['name' => 'Manage Settings', 'slug' => 'manage_settings', 'category' => 'settings'],
+            
+            // System permissions
+            ['name' => 'Manage System', 'slug' => 'manage_system', 'category' => 'system'],
+            ['name' => 'Manage Backups', 'slug' => 'manage_backups', 'category' => 'system'],
+            ['name' => 'Upload Theme', 'slug' => 'upload_theme', 'category' => 'themes'],
         ];
 
         foreach ($permissions as $permission) {

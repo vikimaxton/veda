@@ -34,6 +34,7 @@ Route::prefix('api/cms')->middleware(['web', 'auth'])->group(function () {
     Route::get('themes/{slug}', [ThemeController::class, 'show']);
     Route::post('themes/{slug}/activate', [ThemeController::class, 'activate']);
     Route::get('themes/{slug}/preview', [ThemeController::class, 'preview']);
+    Route::post('themes/upload', [ThemeController::class, 'upload']);
     
     // Plugin Management
     Route::get('plugins', [PluginController::class, 'index']);
@@ -42,6 +43,7 @@ Route::prefix('api/cms')->middleware(['web', 'auth'])->group(function () {
     Route::post('plugins/{slug}/activate', [PluginController::class, 'activate']);
     Route::post('plugins/{slug}/deactivate', [PluginController::class, 'deactivate']);
     Route::delete('plugins/{slug}', [PluginController::class, 'uninstall']);
+    Route::post('plugins/upload', [PluginController::class, 'upload']);
     
     // Role & Permission Management
     Route::apiResource('roles', RoleController::class);
@@ -53,6 +55,15 @@ Route::prefix('api/cms')->middleware(['web', 'auth'])->group(function () {
     Route::get('settings/{group}', [SettingController::class, 'group']);
     Route::put('settings', [SettingController::class, 'update']);
     Route::put('settings/{key}', [SettingController::class, 'updateSingle']);
+    
+    // System Updates
+    Route::prefix('system')->group(function () {
+        Route::post('updates/upload', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'upload']);
+        Route::get('updates/history', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'history']);
+        Route::post('updates/rollback/{backupId}', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'rollback']);
+        Route::get('backups', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'backups']);
+        Route::delete('backups/{backupId}', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'deleteBackup']);
+    });
     
     // Block Registry
     Route::get('blocks', function () {

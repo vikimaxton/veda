@@ -119,18 +119,108 @@ class PluginController extends Controller
     {
         $plugin = Plugin::where('slug', $slug)->firstOrFail();
         
-        $this->authorize('uninstall', $plugin);
+        $this->authorize('delete', $plugin);
 
+        // Deactivate first if active
         if ($plugin->is_active) {
-            return response()->json([
-                'message' => 'Plugin must be deactivated before uninstalling',
-            ], 422);
+            $this->pluginManager->deactivate($slug);
         }
 
-        $plugin->update(['is_installed' => false]);
+        // Delete plugin record
+        $plugin->delete();
 
         return response()->json([
             'message' => 'Plugin uninstalled successfully',
         ]);
+    }
+
+    /**
+     * Upload a new plugin ZIP file
+     */
+    public function upload(): JsonResponse
+    {
+        $this->authorize('create', Plugin::class);
+
+        request()->validate([
+            'plugin_zip' => 'required|file|mimes:zip|max:51200', // 50MB max
+        ]);
+
+        $file = request()->file('plugin_zip');
+        $fileUploadService = app(\App\CMS\Services\FileUploadService::class);
+
+        // Validate ZIP file
+        $errors = $fileUploadService->validateZipFile($file);
+        if (!empty($errors)) {
+            return response()->json([
+                'message' => 'Invalid plugin ZIP file',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        try {
+            // Extract to temporary directory
+            $tempPath = storage_path('app/temp/plugin_upload_' . \Illuminate\Support\Str::random(10));
+            $zipPath = $file->getRealPath();
+
+            if (!$fileUploadService->extractZip($zipPath, $tempPath)) {
+                throw new \Exception('Failed to extract ZIP file');
+            }
+
+            // Validate plugin structure
+            $errors = $fileUploadService->validatePluginStructure($tempPath);
+            if (!empty($errors)) {
+                $fileUploadService->cleanupTemp($tempPath);
+                return response()->json([
+                    'message' => 'Invalid plugin structure',
+                    'errors' => $errors,
+                ], 422);
+            }
+
+            // Read plugin.json
+            $pluginJson = json_decode(\Illuminate\Support\Facades\File::get($tempPath . '/plugin.json'), true);
+            $slug = $pluginJson['slug'];
+
+            // Check if plugin already exists
+            if (Plugin::where('slug', $slug)->exists()) {
+                $fileUploadService->cleanupTemp($tempPath);
+                return response()->json([
+                    'message' => 'Plugin already exists',
+                    'errors' => ['A plugin with this slug already exists. Please uninstall it first.'],
+                ], 422);
+            }
+
+            // Move plugin to plugins directory
+            $pluginPath = base_path('plugins/' . $slug);
+            if (\Illuminate\Support\Facades\File::exists($pluginPath)) {
+                \Illuminate\Support\Facades\File::deleteDirectory($pluginPath);
+            }
+            \Illuminate\Support\Facades\File::moveDirectory($tempPath, $pluginPath);
+
+            // Discover and register plugin
+            $this->pluginManager->discover();
+
+            // Get the newly created plugin
+            $plugin = Plugin::where('slug', $slug)->first();
+
+            return response()->json([
+                'message' => 'Plugin uploaded successfully',
+                'data' => new PluginResource($plugin),
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Cleanup on error
+            if (isset($tempPath)) {
+                $fileUploadService->cleanupTemp($tempPath);
+            }
+
+            \Illuminate\Support\Facades\Log::error('Plugin upload failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Plugin upload failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
